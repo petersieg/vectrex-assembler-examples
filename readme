@@ -219,6 +219,8 @@ music:
 
 Space Ship
 
+![Bild](https://github.com/petersieg/vectrex-assembler-examples/blob/main/pics/ship.jpg)
+
 ; ### Public Domain for all Vecfreaks
 ; ### Testing my abilities so far...
 ; ### Code & comments by man@sci.fi
@@ -504,12 +506,16 @@ fcb    126,0
 
 Pong Game
 
+![Bild](https://github.com/petersieg/vectrex-assembler-examples/blob/main/pics/pong.jpg)
+
 Einfaches aber vollständig funktionierendes Pong Spiel.
 ; this game was written on 08.02.1998 by christopher salomon ; it is public domain
 
 ---
 
 Ski Game
+
+![Bild](https://github.com/petersieg/vectrex-assembler-examples/blob/main/pics/ski.jpg)
 
 Einfaches Skiabfahrt 'Spiel'. Kein komplett fertiges Spiel, aber ein funktionierendes Grundgerüst.
 ; *** Spike goes Skiing ***
