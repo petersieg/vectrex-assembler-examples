@@ -1,0 +1,109 @@
+; Draws a figure
+; Based on code by Christopher Tumber
+; Based on work by man@sci.fi
+; (c) 2007 Peter.Sieg1@gmx.de
+; Public Domain for all Vectrex freaks
+
+; First we rename all the BIOS routines
+; we'll be needing
+
+waitrecal       EQU   $f192    
+movepen7ftod    EQU   $f2fc
+intensitytoA    EQU   $f2ab
+movedrawVL4     EQU   $f3b7
+draw_to_d       EQU   $f3df
+ROTVL           equ   $f610
+
+; *** Needed variables
+rotangle        equ   $c886    ; Rotation angle
+rotated         equ   $c890    ; Takes up some RAM
+                               ; (the rotated coordinates)
+
+; You can give them your own names if you want to
+; just make sure you understand them, and preferably
+; that someone else reading your source code 
+; understands them as well. (EQU = equals)
+; All programs start from address $0000
+; In this example, all numbers are actual numbers
+; not hexadecimals like in the tutorials
+; Assembly is quite capable of handling real numbers
+; and they are much more easy for a beginner to 
+; understand
+        ORG   $0000
+
+; Init block that needs to be in every program
+; the GCE text has to be in place, it is checked
+; by BIOS
+        FCB   $67,$20
+        FCC   "GCE SIEG"
+        FCB   $80
+        FDB   music
+        FDB   $f850
+        FDB   $30b8
+        FCC   "DRAWING"
+        FCB   $80,$0
+
+        clra                     ; Reseting rotation angle
+        sta   rotangle 
+
+draw_line:
+        inc   rotangle           ; Increase rotation angle
+
+;Draws a line from the middle of screen to top right edge.
+        jsr   waitrecal          ; Reset the CRT
+        lda   #0                 ; Get y
+        ldb   #0                 ; Get x
+        jsr   movepen7ftod       ; go to (x,y)
+        lda   #$7f               ; Get the Intensity
+        jsr   intensitytoA       ; Set intensity
+        lda   #127               ; Get y
+        ldb   #127               ; Get x
+        jsr   draw_to_d          ; draw a line to (x,y)
+
+; draw some vectors
+        ldx   #figure            ; Load the vector list
+        ldb   #3                 ; Number of vectors
+        lda   rotangle           ; Rotation angle
+        ldu   #rotated           ; Save to pyoritetyt
+        jsr   ROTVL              ; Rotates the coordinates
+
+        jsr   waitrecal          ; Resets the BIOS
+        lda   #127               ; Gets the Intensity
+        jsr   intensitytoA       ; Sets the Intensity
+
+        lda   #0                 ; Y - coordinate
+        ldb   #0                 ; X - coordinate
+        jsr   movepen7ftod       ; Moves pen to (Y,X)
+        ldx   #rotated           ; Gets the rotated vector list
+        lda   #3                 ; Number of vectors
+                                 ; = how many vectors 
+                                 ; will be drawn, the
+                                 ; starting point isn't
+                                 ; counted
+        ldb   #$80               ; gets the scale
+        jsr   movedrawVL4        ; BIOS-routine that
+                                 ; draws the vector
+        bra   draw_line          ; jumps back to start    
+
+; It jumps back, because on Vectrex, you have to be
+; drawing all the time to keep the vectors visible
+
+; bra = branch
+; lda = load to register a
+; ldb = load to register b
+
+; ein Dreieck
+figure:  
+       fcb   0,0         ; 0,0 = Bildschirm-Mitte
+       fcb   -64,32      ; y=-64=gehe 64 Pixels nach unten und x=32=gehe 32 Pixels nach rechts
+       fcb   0,-64       ; y=0=bleibe an y-Position und x=-64=gehe 64 Pixels nach links
+       fcb   64,32       ; y=64=gehe 64 Pixels nach oben und x=32gehe 32 Pixels nach rechts
+
+music:
+       FDB   $fee8
+       FDB   $feb6
+       FCB   $28,$08
+       FCB   $0,$80
+
+
+; This basicly tells Vectrex to play nothing
