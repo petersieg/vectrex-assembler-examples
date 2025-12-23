@@ -81,6 +81,8 @@ of anything.
 
 Drawings (test.as9)
 
+![Bild](https://github.com/petersieg/vectrex-assembler-examples/blob/main/pics/test.jpg)
+
 Hier wird eine Linie von der Mitte zur oberen rechten Ecke gezeichnet. Anschließend ein Vector (Dreieck) mit dem Scheitelpunkt in Bildschirmmitte (0,0). Dieses dreht dann im Gegenuhrzeigersinn um den 0,0 Punkt.
 
 ; Draws a figure
