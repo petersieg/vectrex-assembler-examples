@@ -82,7 +82,7 @@ of anything.
 Drawings (test.as9)
 
 Hier wird eine Linie von der Mitte zur oberen rechten Ecke gezeichnet. Anschließend ein Vector (Dreieck) mit dem Scheitelpunkt in Bildschirmmitte (0,0). Dieses dreht dann im Gegenuhrzeigersinn um den 0,0 Punkt.
-(Das kann man leider in einer Hardcopy nicht sehen ;-)
+
 ; Draws a figure
 ; Based on code by Christopher Tumber
 ; Based on work by man@sci.fi
