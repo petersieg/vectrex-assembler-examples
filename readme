@@ -90,7 +90,7 @@ Hier wird eine Linie von der Mitte zur oberen rechten Ecke gezeichnet. Anschlie√
 ; Public Domain for all Vectrex freaks
 ; First we rename all the BIOS routines
 ; we'll be needing
- waitrecal       EQU   $f192
+waitrecal       EQU   $f192
 movepen7ftod    EQU   $f2fc
 intensitytoA    EQU   $f2ab
 movedrawVL4     EQU   $f3b7
@@ -217,7 +217,7 @@ music:
 
 Space Ship
 
- ; ### Public Domain for all Vecfreaks
+; ### Public Domain for all Vecfreaks
 ; ### Testing my abilities so far...
 ; ### Code & comments by man@sci.fi
 ; ### Needed BIOS routines
