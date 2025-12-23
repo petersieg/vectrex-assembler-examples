@@ -1,7 +1,16 @@
 Find here a09 assembler source (and macos exe) with some example sources for vectrex game console.
 
-The Program Skeleton
-====================
+A09, 6809 Assembler.
+   
+   (C) Copyright 1993,1994 L.C. Benschop.
+   Parts (C) Copyright 2001-2020 H. Seib.
+   This version of the program is distributed under the terms and conditions
+   of the GNU General Public License version 2. See file the COPYING for details.
+   THERE IS NO WARRANTY ON THIS PROGRAM.
+
+
+The Vectrex Program Skeleton
+============================
 
 This is about the simplest, most basic program you can write for the Vectrex
 which will actually assemble and run:
