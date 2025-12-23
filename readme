@@ -1,1 +1,510 @@
 Find here a09 assembler source (and macos exe) with some example sources for vectrex game console.
+
+The Program Skeleton
+====================
+
+This is about the simplest, most basic program you can write for the Vectrex
+which will actually assemble and run:
+        ORG     $0000
+; Magic Init Block
+        FCB     $67,$20
+        FCC     "GCE XXXX"
+        FCB     $80
+        FDB     music
+        FDB     $f850
+        FDB     $30b8
+        FCC     "SIMPLE"
+        FCB     $80,$0
+start:
+        bra start
+music:
+        FDB     $fee8
+        FDB     $feb6
+        FCB     $0,$80
+        FCB     $0,$80
+In fact, it's so simple it doesn't really do anything at all. But it will
+work and it shows you all the parts which MUST be included in a Vectrex
+program in order for it to work.
+First is the line:
+        ORG     $0000
+This line tells the assembler to start assembling code at memory location
+$0000. For the Vectrex, ALL code begins at $0000. However, on many other
+computers code can start in a variety of places. Or, you may want to assemble
+your code in a bunch of little pieces and then join them together later. As
+the assembler is multi-purpose it includes the option to begin assembly
+anywhere, but for our purposes with the Vectrex we will ALWAYS use:
+        ORG     $0000
+Next is the "Magic Init Block"
+; Magic Init Block
+        FCB     $67,$20
+        FCC     "GCE XXXX"
+        FCB     $80
+        FDB     music
+        FDB     $f850
+        FDB     $30b8
+        FCC     "SIMPLE"
+        FCB     $80,$0
+   
+This actually contains all the information the Vectrex needs to compose the
+screen you see at startup. "GCE XXXX" is the copyright info. "SIMPLE" is the
+name of the program/game. music is the starting address of the music data
+that is played when the game first starts up. In this case, I've set it to
+some music data included below, but there are also several pieces of music
+built into the BIOS that you can use. Eventually, you may want to write your
+own music.
+The actual program is:
+start:
+        bra start
+Which just tells the 6809 to endlessly loop and do nothing. Like I said, a
+very simple program.
+Finally is the music data:
+music:
+        FDB     $fee8
+        FDB     $feb6
+        FCB     $0,$80
+        FCB     $0,$80
+I won't go into the format for music here, but this code just tells the
+Vectrex not to play any music.
+And that's it. That's a Vectrex program, though granted it doesn't do much
+of anything.
+
+---
+
+Drawings (test.as9)
+
+Hier wird eine Linie von der Mitte zur oberen rechten Ecke gezeichnet. Anschließend ein Vector (Dreieck) mit dem Scheitelpunkt in Bildschirmmitte (0,0). Dieses dreht dann im Gegenuhrzeigersinn um den 0,0 Punkt.
+(Das kann man leider in einer Hardcopy nicht sehen ;-)
+; Draws a figure
+; Based on code by Christopher Tumber
+; Based on work by man@sci.fi
+; (c) 2007 Peter.Sieg1@gmx.de
+; Public Domain for all Vectrex freaks
+; First we rename all the BIOS routines
+; we'll be needing
+ waitrecal       EQU   $f192
+movepen7ftod    EQU   $f2fc
+intensitytoA    EQU   $f2ab
+movedrawVL4     EQU   $f3b7
+draw_to_d       EQU   $f3df
+ROTVL           equ   $f610
+; *** Needed variables
+rotangle        equ   $c886
+rotated         equ   $c890
+; Rotation angle
+; Takes up some RAM
+; (the rotated coordinates)
+; You can give them your own names if you want to
+; just make sure you understand them, and preferably
+; that someone else reading your source code
+; understands them as well. (EQU = equals)
+; All programs start from address $0000
+; In this example, all numbers are actual numbers
+; not hexadecimals like in the tutorials
+; Assembly is quite capable of handling real numbers
+: and they are much more easy for a beginner to
+; understand
+ORG $0000
+; Init block that needs to be in every program
+; the GCE text has to be in place, it is checked
+; by BIOS
+        FCB   $67,$20
+        FCC   "GCE SIEG"
+        FCB   $80
+        FDB   music
+        FDB   $f850
+        FDB   $30b8
+        FCC   "DRAWING"
+        FCB   $80,$0
+        clra
+        sta   rotangle
+draw_line:
+        inc   rotangle
+; Reseting rotation angle
+                                 ; Increase rotation angle
+;Draws a line from the middle of screen to top right edge.
+        jsr   waitrecal
+lda #0
+ldb #0
+        jsr   movepen7ftod
+        lda   #$7f
+        jsr   intensitytoA
+lda #127
+ldb #127
+        jsr   draw_to_d
+; draw some vectors
+        ldx   #figure
+        ldb   #3
+        lda   rotangle
+        ldu   #rotated
+        jsr   ROTVL
+        jsr   waitrecal
+        lda   #127
+        jsr   intensitytoA
+lda #0
+ldb #0
+        jsr   movepen7ftod
+        ldx   #rotated
+lda #3
+ldb #$80
+        jsr   movedrawVL4
+        bra   draw_line
+; Reset the CRT
+; Get y
+; Get x
+; go to (x,y)
+; Get the Intensity
+; Set intensity
+; Get y
+; Get x
+; draw a line to (x,y)
+; Load the vector list
+; Number of vectors
+; Rotation angle
+; Save to pyoritetyt
+; Rotates the coordinates
+; Resets the BIOS
+; Gets the Intensity
+; Sets the Intensity
+; Y - coordinate
+; X - coordinate
+; Moves pen to (Y,X)
+; Gets the rotated vector list
+; Number of vectors
+; = how many vectors
+; will be drawn, the
+; starting point isn't
+; counted
+; gets the scale
+; BIOS-routine that
+; draws the vector
+; jumps back to start
+; It jumps back, because on Vectrex, you have to be
+; drawing all the time to keep the vectors visible
+; bra = branch
+; lda = load to register a
+; ldb = load to register b
+; ein Dreieck
+figure:
+fcb 0,0
+       fcb   -64,32
+Pixels nach rechts
+       fcb   0,-64
+nach links
+       fcb   64,32
+nach rechts
+; 0,0 = Bildschirm-Mitte
+; y=-64=gehe 64 Pixels nach unten und x=32=gehe 32
+; y=0=bleibe an y-Position und x=-64=gehe 64 Pixels
+; y=64=gehe 64 Pixels nach oben und x=32gehe 32 Pixels
+
+music:
+       FDB   $fee8
+       FDB   $feb6
+       FCB   $28,$08
+       FCB   $0,$80
+; This basicly tells Vectrex to play nothing
+
+---
+
+Space Ship
+
+ ; ### Public Domain for all Vecfreaks
+; ### Testing my abilities so far...
+; ### Code & comments by man@sci.fi
+; ### Needed BIOS routines
+WAITRECAL      equ    $f192
+INTENSITY      equ    $f2ab
+PRINTSTR       equ    $f37a
+RESET0REF      equ    $f354
+MOVEPEN        equ
+MOVEDRAW       equ
+JOYDIGITAL     equ
+JOY1XENABLE    equ
+JOY1YENABLE    equ
+JOY2XENABLE    equ
+JOY2YENABLE    equ
+JOY1X          equ
+JOY1Y          equ
+READBUTTONS    equ
+alusx          equ
+alusy          equ
+; ### Here we go.
+    org    0
+$f2fc $f3b7
+$f1f8  ; Reads joystick positions
+$c81f  ; Enables joystick 1 X
+$c820  ; Enables joystick 1 Y
+$c821  ; Enables joystick 2 X
+$c822  ; Enables joystick 2 Y
+$c81b  ; Joystick 1 left/right
+$c81c  ; Joystick 1 up/down
+$f1ba  ; Reads joystick buttons
+$c881  ; Space ship x position
+$c882  ; Space ship y position
+; ### The required init block.
+fcb    $67,$20
+fcc    "GCE MANU"
+fcb    $80
+fdb    $fd0d
+fdb    $f850
+fdb    $30b8
+fcc    "SPACE SHIP"
+fcb    $80,$0
+; All text ends with $80
+; Play song "$fe38" from ROM
+; Width, height
+; y-position, x-position
+                             ; Init block ends with $0
+; ### Okay, this sets up the joystick checks, and only
+; ### allows them for joystick 1, thus saving us a few
+; ### hundred cycles. Don't forget to set joystick 2
+; ### to 0, if you don't need it.
+lda    #1
+sta    JOY1XENABLE
+lda    #3
+sta    JOY1YENABLE
+lda    #0
+sta    JOY2XENABLE
+sta    JOY2YENABLE
+lda    #-50
+sta    alusy
+; 1 is the flag to enable
+; joystick 1 X
+; 3 is the flag to enable
+; joystick 1 Y
+; 5 would enable this
+; 7 would enable this
+; Set the starting y-coordinate
+; of the space ship to -50
+; #################################
+; ### Here's the actual program ###
+; #################################
+tikku
+    jsr    WAITRECAL
+; ### The space ship
+    jsr    RESET0REF
+    lda    #127
+    jsr    INTENSITY
+lda alusy
+ldb alusx
+jsr MOVEPEN
+; BIOS recalibration
+; Beam to the center
+; Sets intensity to 127
+; Y - coordinate
+; X - coordinate
+; Drawing the space ship
+; Number of vectors
+; Scaling
+; Beam to the center
+; Intesity to 30 ;Y
+;X
+; Drawing the edges
+; Vectors
+; Scaling
+; Compares a to 0
+; If it was 0 -> lovejoy
+; Otherwise
+; Tests for button 1
+; If it wasn't button 1
+; If it was button 1 ->
+    ldx
+    lda
+    ldb
+    jsr    MOVEDRAW
+; ### Let's frame the area
+    jsr    RESET0REF
+    lda    #30
+    jsr    INTENSITY
+lda #0
+ldb #0
+    jsr    MOVEPEN
+    ldx    #reunat
+lda #8
+ldb #128
+jsr MOVEDRAW
+; #########################
+; ### Reads the buttons ###
+; #########################
+butt1
+    jsr    READBUTTONS
+    cmpa   #0
+    lbeq   lovejoy
+    bita   #$01
+    lbeq   lovejoy
+; ##########################
+; ### Reads the joystick ###
+; ##########################
+#alus #17
+#128
+
+lovejoy
+    jsr    JOYDIGITAL
+    lda    JOY1X
+    lbeq   noxmove
+    lbmi   lmove
+; Reads joystick
+; Joy 1 X position to A
+; If 0 -> jump to noxmove
+; If negative -> lmove
+; ### If something else (positive)           ###
+; ### the joystick has been moved right.     ###
+; ### Limiting the maximum x-value to 118    ###
+rmove
+    lda    alusx
+    cmpa   #118
+    lbeq   xiso
+    inc    alusx
+    bra    xready
+xiso
+lda #118
+    sta    alusx
+    bra    xready
+; Value of alusx to A
+; Compare A to 118
+; If it is 118 -> xiso
+; Increase alusx
+; Jump to xready
+; Load 118 to A
+; Store A to alusx
+; Jump to xready
+; ### Joystick has been moved left.          ###
+; ### Limiting the minimum y-value to -118   ###
+lmove
+    lda    alusx
+    cmpa   #-118
+    lbeq   xpieni
+    dec    alusx
+    bra    xready
+xpieni
+    lda    #-118
+    sta    alusx
+    bra    xready
+; Value of alusx to A
+; Compare A to -118
+; If it is -118 -> xpieni
+; Decrease alusx
+; Jump to xready
+; Load -118 to A
+; Store A to alusx
+; Jump to xready
+; ### Joystick hasn't been moved left or right.
+noxmove
+; ### Done with checking if the joystick
+; ### was moved left or right, now checking
+; ### if it was moved up or down.
+xready
+    lda    JOY1Y
+    beq    noymove
+    bmi    dmove
+; Joy 1 Y position to A
+; If 0 -> jump to noymove
+; If negative -> dmove
+; ### If something else (positive)          ###
+; ### the joystick has been moved up.       ###
+; ### Limiting the maximum y-value to 126   ###
+umove
+    lda    alusy
+    cmpa   #126
+    lbeq   yiso
+    inc    alusy
+    bra    yready
+yiso
+lda #126
+sta alusy
+; Value of alusy to A
+; Compare A to 126
+; If it is 126 -> yiso
+; Increase alusy
+; Jump to yready
+; Load 126 to A
+; Store A to alusy
+
+bra    yready            ; Jump to yready
+; ### Joystick has been moved down.         ###
+; ### Limiting the minimum y-value to -111  ###
+dmove
+    lda    alusy
+    cmpa   #-111
+    lbeq   ypieni
+    dec    alusy
+    bra    yready
+ypieni
+    lda    #-111
+    sta    alusy
+    bra    yready
+; Value of alusy to A
+; Compare A to -116
+; If it is -116 -> ypieni
+; Decrease alusy
+; Jump to yready
+; Load -116 to A
+; Store A to alusy
+; Jump to yready
+; ### When making the limits (ie. how far)
+; ### the ship can go, you have to count in
+; ### the size of the ship. Best way to do this
+; ### is to try it out. Ships 'hot spot' is
+; ### where the first vector starts from.
+; ### Joystick hasn't been moved up or down.
+noymove
+; ### Done with checking if the joystick has
+; ### been moved up or down - so let's go
+; ### back to the beginning and check all again.
+yready
+   lbra    tikku              ; Repeat
+; ### You need LBRA, because BRA is too short a jump
+; ### to jump to the beginning all the way from here
+; ### Then all the coordinates that are needed
+alus
+fcb 0,0
+    fcb    -3,2
+    fcb    -3,1
+    fcb    -2,0
+    fcb    -3,1
+    fcb    0,2
+    fcb    -3,2
+    fcb    0,-3
+    fcb    2,-2
+    fcb    0,-6
+    fcb    -2,-2
+    fcb    0,-3
+    fcb    3,2
+    fcb    0,2
+    fcb    3,1
+    fcb    2,0
+    fcb    3,1
+    fcb    3,2
+reunat
+    fcb    126,-126
+    fcb    0,126
+    fcb    0,126
+; Tip of the ship
+; also the 'hot spot'
+
+fcb    -126,0
+fcb    -126,0
+fcb    0,-126
+fcb    0,-126
+fcb    126,0
+fcb    126,0
+
+---
+
+Pong Game
+
+Einfaches aber vollständig funktionierendes Pong Spiel.
+; this game was written on 08.02.1998 by christopher salomon ; it is public domain
+
+---
+
+Ski Game
+
+Einfaches Skiabfahrt 'Spiel'. Kein komplett fertiges Spiel, aber ein funktionierendes Grundgerüst.
+; *** Spike goes Skiing ***
+; v0.03a
+; This source code is copyright Andrew Coleman
+; This whole thing is Freeware.
+; You can play around with it, steal bits of it, do whatever you want with it really,
+; but please DO NOT distribute any modified versions of this source without my permission.
+; Big thanks go out to Chris Salamon, without his programming docs i'd never have gotten ; this far.
